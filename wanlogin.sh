@@ -87,7 +87,15 @@ fi
 if command -v shuf &> /dev/null; then
     mapfile -t ACCOUNTS < <(shuf "$ACCOUNTS_FILE")
 else
-    mapfile -t ACCOUNTS < <(grep -vE '^\s*$' "$ACCOUNTS_FILE" | sort -r)
+    # 兼容无 shuf 环境，使用内置随机排序
+    mapfile -t ACCOUNTS < <(grep -vE '^\s*$' "$ACCOUNTS_FILE")
+    # 洗牌算法打乱数组顺序
+    for ((i=${#ACCOUNTS[@]}-1; i>0; i--)); do
+        j=$((RANDOM % (i+1)))
+        tmp=${ACCOUNTS[i]}
+        ACCOUNTS[i]=${ACCOUNTS[j]}
+        ACCOUNTS[j]=$tmp
+    done
 fi
 
 # 检查账号数量
